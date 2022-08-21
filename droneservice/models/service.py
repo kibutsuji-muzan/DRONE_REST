@@ -1,5 +1,5 @@
 from django.db import models
-from drone_api.models.category import Category
+from droneshop.models.category import Category
 from django.utils.translation import gettext_lazy as _
 
 class ServiceType(models.Model):
@@ -19,6 +19,7 @@ class Service(models.Model):
 
     ServiceType = models.ForeignKey(ServiceType, on_delete=models.RESTRICT)
     category = models.ForeignKey(Category, on_delete=models.RESTRICT)
+
     name = models.CharField(_("Name"),max_length=20)
     title = models.CharField(_("Title"), max_length=255)
     desc = models.CharField(_("Description"), max_length=255)
@@ -37,6 +38,7 @@ class Service(models.Model):
 
 class ServiceDetail(models.Model):
     name = models.CharField(_("Name"),max_length=255)
+
     ServiceType = models.ForeignKey(ServiceType, on_delete=models.CASCADE)
 
     class Meta:
@@ -50,6 +52,7 @@ class ServiceDetail(models.Model):
 class ServiceDetailValue(models.Model):
     Service = models.ForeignKey(Service,on_delete=models.CASCADE)
     Detail = models.ForeignKey(ServiceDetail, on_delete=models.RESTRICT)
+    
     value = models.CharField(_("Value"), max_length=50)
 
     class Meta:

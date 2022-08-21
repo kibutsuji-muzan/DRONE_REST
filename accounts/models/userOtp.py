@@ -7,14 +7,17 @@ from binascii import unhexlify
 import logging
 from django.utils.translation import gettext_lazy as _
 from accounts.models.userModel import User
-
+import uuid
 
 def default_key():
     return random_hex(20)
 
 #django_otp Device model to generate and verify token.
 class VerificationDevice(Device):
-    unverified_phone = models.SlugField(_("Unverified Phone"),max_length=255,unique=True)
+
+    # uuid = models.UUIDField(_('UUID'),default=uuid.uuid4,primary_key=True,editable=False)
+    
+    unverified_phone = models.EmailField(_("Unverified Phone"),max_length=255,unique=True)
     secret_key = models.CharField(
         _("Secret Key"),
         max_length=40,
@@ -30,7 +33,7 @@ class VerificationDevice(Device):
                    "The next token must be at a higher counter value."
                    "It makes sure a token is used only once.")
     )
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     verified = models.BooleanField(default=False)
 
     step = models.IntegerField(default=300)
@@ -78,3 +81,8 @@ class VerificationDevice(Device):
         else:
             self.verified = False
         return self.verified
+
+    class Meta:
+        # model_lable = _("VerificationDevice")
+        verbose_name = _("Verification Device")
+        verbose_name_plural = _("Verification Devices")

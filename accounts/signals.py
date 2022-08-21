@@ -3,7 +3,7 @@ from django.db.models.signals import post_save
 from accounts.models.userOtp import VerificationDevice
 from accounts.models.userModel import User#, LoggedInUser
 from accounts.models.profileModel import UserProfile
-from django.contrib.auth import user_logged_in, user_logged_out
+# from django.contrib.auth import user_logged_in, user_logged_out
 
 
 @receiver(post_save, sender=User)

@@ -14,7 +14,7 @@ class SellersPage(APIView):
 
     def get(self, request, slug):
 
-        query = Product.objects.filter(owner=slug)
+        query = Product.objects.filter(product_uuid=slug)
         serializer = ProductSerializer(query, many=True)
         return Response(serializer.data)
 

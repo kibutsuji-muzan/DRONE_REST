@@ -45,4 +45,4 @@ class User(AbstractUser):
 #         verbose_name = _("Logged In User")
 #         verbose_name_plural = _("Logged In Users")
 #         model_lable = _("LoggedInUser")
-#         
+

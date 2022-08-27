@@ -40,7 +40,7 @@ INSTALLED_APPS = [
 
     'accounts.apps.AccountsConfig',
     'droneshop.apps.DroneshopConfig',
-    'droneservice.apps.DroneserviceConfig',
+    # 'droneservice.apps.DroneserviceConfig',
     'extras.apps.ExtrasConfig',
 
     'phonenumber_field',

@@ -38,7 +38,6 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now=True,editable=False)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=False)
-    is_verified = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = _("Product")
@@ -85,8 +84,14 @@ class ProductImage(models.Model):
         verbose_name = _("Product Image")
         verbose_name_plural = _("Product Images") 
 
-class VerificationRequest(models.Model):
+class ProductVerificationRequest(models.Model):
 
     productName = models.OneToOneField(Product, verbose_name=_("Product Name"), on_delete=models.CASCADE)
 
-    is_verified = models.BooleanField(default=False)    
+    is_verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.productName)
+    class Meta:
+        verbose_name = _("Product Verification")
+        verbose_name_plural = _("Products Verification")

@@ -34,7 +34,7 @@ class UserProfile(models.Model):
     def __str__(self):
         full_name = self.first_name + self.last_name
         return full_name
-    
+
     class Meta:
         verbose_name = _("User Profile")
         verbose_name_plural = _("User Profiles")
@@ -42,11 +42,13 @@ class UserProfile(models.Model):
 
 class ProfileImage(models.Model):
 
+    profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, verbose_name=_("Profile"))
+
     image = models.ImageField(_("Image"), upload_to="ProfileImages/", default="ProfileImages/default.png")
     alt_txt = models.CharField(_("Alternative Text"), max_length=20, default="Your Profile Image")
     created_at = models.DateTimeField(_("Created On"),auto_now=True,editable=False)
     updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
-    profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, verbose_name=_("Profile"))
+    
     class Meta:
         verbose_name = _("Profile Image")
         verbose_name_plural = _("Profile Images")

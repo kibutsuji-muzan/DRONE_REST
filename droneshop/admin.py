@@ -1,13 +1,13 @@
 from django.contrib import admin
 
 from droneshop.models.category import (Category, CategoryByUser)
-from droneshop.models.product import (Product, ProductDetailValue, ProductImage, VerificationRequest)
+from droneshop.models.product import (Product, ProductDetailValue, ProductImage, ProductVerificationRequest)
 from droneshop.models.orderAcustomer import (orderedItem, customer)
 
 # Register your models here.
 admin.site.register(Category)
 admin.site.register(CategoryByUser)
-
+admin.site.register(ProductVerificationRequest)
 # class ProductDetailInline(admin.TabularInline):
 #     model = ProductDetail
 
@@ -18,7 +18,7 @@ class ProductValueInline(admin.TabularInline):
     model = ProductDetailValue
 
 class VerificationRequestInline(admin.StackedInline):
-    model = VerificationRequest
+    model = ProductVerificationRequest
 
 class OrderInline(admin.StackedInline):
     model = orderedItem

@@ -38,15 +38,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'accounts.apps.AccountsConfig',
-    'droneshop.apps.DroneshopConfig',
-    # 'droneservice.apps.DroneserviceConfig',
-    'extras.apps.ExtrasConfig',
-
     'phonenumber_field',
     'rest_framework',
     'mptt',
     'corsheaders',
+
+    'accounts.apps.AccountsConfig',
+    'droneshop.apps.DroneshopConfig',
+    'droneservice.apps.DroneserviceConfig',
+    'extras.apps.ExtrasConfig',
 
 ]
 

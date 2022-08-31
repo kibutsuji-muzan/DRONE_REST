@@ -1,9 +1,12 @@
 from django.contrib import admin
 from django.contrib import admin
 from accounts.models.userModel import User#, LoggedInUser
-from accounts.models.profileModel import UserProfile, ProfileImage, ProfileType
+from accounts.models.profileModel import UserProfile, ProfileImage, ProfileType, ProfileUpdateRequest
 from accounts.models.userOtp import VerificationDevice
 from django.contrib.sessions.models import Session
+
+class UpdateRequestInline(admin.StackedInline):
+    model = ProfileUpdateRequest
 
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
@@ -20,7 +23,7 @@ class Admin(admin.ModelAdmin):
 
 @admin.register(UserProfile)
 class Admin(admin.ModelAdmin):
-    inlines = [ProfileImageInline]
+    inlines = [ProfileImageInline, UpdateRequestInline]
 
 admin.site.register(Session)
 admin.site.register(ProfileType)

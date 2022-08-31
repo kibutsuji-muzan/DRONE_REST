@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from droneshop.models.category import (Category, CategoryByUser)
 from droneshop.models.product import (Product, ProductDetailValue, ProductImage, ProductVerificationRequest)
-from droneshop.models.orderAcustomer import (orderedItem, customer)
+from droneshop.models.orders import (orderedItem, customer)
 
 # Register your models here.
 admin.site.register(Category)

@@ -28,11 +28,6 @@ schemaview = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('droneshop.urls')),
+    path('', include('droneshop.urls')),
     path('schema/', schemaview)
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# schemaPatterns=[
-# ]
-
-# urlpatterns += schemaPatterns

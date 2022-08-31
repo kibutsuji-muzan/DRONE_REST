@@ -8,11 +8,11 @@ import uuid
 class Service(models.Model):
 
     owner = models.ForeignKey(UserProfile, verbose_name=_('Owner'), on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.RESTRICT,related_name="Product")
+    categoryByUser = models.ForeignKey(CategoryByUser, verbose_name=_('Category By Owner'), on_delete=models.SET_NULL, null=True, related_name="Service_User")
 
-    category = models.ForeignKey(Category, on_delete=models.RESTRICT)
-    categoryByUser = models.ForeignKey(CategoryByUser, verbose_name=_('Category By Owner'), on_delete=models.SET_NULL, null=True)
+    uuid = models.UUIDField(_("PID"), max_length=20, unique=True, editable=False, primary_key=True, default=uuid.uuid4)
 
-    service_uuid = models.UUIDField(_("Service UUID"), default=uuid.uuid4,primary_key=True,editable=True)
     name = models.CharField(_("Name"),max_length=20)
     title = models.CharField(_("Title"), max_length=255)
     desc = models.CharField(_("Description"), max_length=255)
@@ -31,8 +31,9 @@ class Service(models.Model):
 
 class ServiceDetailValue(models.Model):
     service = models.ForeignKey(Service,on_delete=models.CASCADE, related_name='Service_detail')
+    uuid = models.UUIDField(_("PID"), max_length=20, unique=True, editable=False, primary_key=True, default=uuid.uuid4)
 
-    detail_key = models.CharField(_("Detail"), max_length=50, null=True)
+    detail_key = models.CharField(_("Detail"), max_length=50)
     value_key = models.CharField(_("Value"), max_length=50)
 
     class Meta:
@@ -42,11 +43,12 @@ class ServiceDetailValue(models.Model):
 
 
 class ServiceImage(models.Model):
+    uuid = models.UUIDField(_("PID"), max_length=20, unique=True, editable=False, primary_key=True, default=uuid.uuid4)
 
     service = models.ForeignKey(Service, verbose_name=_("Service"), on_delete=models.CASCADE,related_name="Service_image")
 
     image = models.ImageField(_("Image"), upload_to="ServiceImages/")
-    alt_text = models.CharField(_("Alternative Text"), max_length=255, null=True, blank=True)
+    alt_text = models.CharField(_("Alternative Text"), max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now=True,editable=False)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -55,6 +57,7 @@ class ServiceImage(models.Model):
         verbose_name_plural = _("Service Images") 
 
 class ServiceVerificationRequest(models.Model):
+    uuid = models.UUIDField(_("PID"), max_length=20, unique=True, editable=False, primary_key=True, default=uuid.uuid4)
 
     serviceName = models.OneToOneField(Service, verbose_name=_("Service Name"), on_delete=models.CASCADE)
 

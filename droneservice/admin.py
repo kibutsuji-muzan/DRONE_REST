@@ -1,6 +1,6 @@
 from django.contrib import admin
 from droneservice.models.service import Service, ServiceImage, ServiceVerificationRequest,ServiceDetailValue
-from droneservice.models.customerOrder import orderedService ,customer
+from droneservice.models.order import orderedService ,customer
 class ServiceImageInline(admin.StackedInline):
     model = ServiceImage
 

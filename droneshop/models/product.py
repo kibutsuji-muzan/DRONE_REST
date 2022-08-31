@@ -5,31 +5,13 @@ from django.utils.translation import gettext_lazy as _
 from accounts.models.profileModel import UserProfile
 import uuid
 
-# class ProductType(models.Model):
-
-#     uuid = models.UUIDField(_("UUID"),default=uuid.uuid4,primary_key=True,editable=True)
-    
-#     name = models.CharField(_("Name"), max_length=20, unique=True)
-#     is_active = models.BooleanField(default=True)
-#     created_at = models.DateTimeField(auto_now=True,editable=False)
-#     updated_at = models.DateTimeField(auto_now=True)
-
-#     class Meta:
-#         verbose_name = _("Product Type")
-#         verbose_name_plural = _("Product Types")
-
-#     def __str__(self):
-#         return self.name
-
-
 class Product(models.Model):
+    uuid = models.UUIDField(_("UUID"), primary_key=True, default=uuid.uuid4, unique=True, editable=False)
 
     owner = models.ForeignKey(UserProfile, verbose_name=_('Owner'), on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.RESTRICT,related_name="Product")
+    categoryByUser = models.ForeignKey(CategoryByUser, verbose_name=_('Category By Owner'), on_delete=models.SET_NULL, null=True, related_name="Product_User")
 
-    category = models.ForeignKey(Category, on_delete=models.RESTRICT)
-    categoryByUser = models.ForeignKey(CategoryByUser, verbose_name=_('Category By Owner'), on_delete=models.SET_NULL, null=True)
-
-    product_uuid = models.UUIDField(_("Product UUID"), default=uuid.uuid4,primary_key=True,editable=True)
     name = models.CharField(_("Name"),max_length=20)
     title = models.CharField(_("Title"), max_length=255)
     desc = models.CharField(_("Description"), max_length=255)
@@ -46,20 +28,9 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-# class ProductDetail(models.Model):
-#     productType = models.ForeignKey(ProductType, on_delete=models.CASCADE)
-
-#     name = models.CharField(_("Name"),max_length=255)
-
-#     class Meta:
-#         verbose_name = _("Product Detail")
-#         verbose_name_plural = _("Product Details")
-
-#     def __str__(self):
-#         return self.name
-
-
 class ProductDetailValue(models.Model):
+    uuid = models.UUIDField(_("UUID"), primary_key=True, default=uuid.uuid4, unique=True, editable=False)
+
     Product = models.ForeignKey(Product,on_delete=models.CASCADE, related_name='product_detail')
 
     detail_key = models.CharField(_("Detail"), max_length=50, null=True)
@@ -67,11 +38,11 @@ class ProductDetailValue(models.Model):
 
     class Meta:
         verbose_name = _("Product Detail Value")
-        verbose_name_plural = _("Product Detail Values")
-
+        verbose_name_plural = _("Product Detail & Values")
 
 
 class ProductImage(models.Model):
+    uuid = models.UUIDField(_("UUID"), primary_key=True, default=uuid.uuid4, unique=True, editable=False)
 
     product = models.ForeignKey(Product, verbose_name=_("Product"), on_delete=models.CASCADE,related_name="product_image")
 
@@ -86,12 +57,15 @@ class ProductImage(models.Model):
 
 class ProductVerificationRequest(models.Model):
 
-    productName = models.OneToOneField(Product, verbose_name=_("Product Name"), on_delete=models.CASCADE)
+    uuid = models.UUIDField(_("UUID"), primary_key=True, default=uuid.uuid4, unique=True, editable=False)
+
+    product_name = models.OneToOneField(Product, verbose_name=_("Product Name"), on_delete=models.CASCADE, related_name="Product")
 
     is_verified = models.BooleanField(default=False)
 
     def __str__(self):
-        return str(self.productName)
+        return self.product_name.name
+
     class Meta:
         verbose_name = _("Product Verification")
         verbose_name_plural = _("Products Verification")

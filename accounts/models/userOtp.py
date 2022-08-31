@@ -15,7 +15,7 @@ def default_key():
 #django_otp Device model to generate and verify token.
 class VerificationDevice(Device):
 
-    # uuid = models.UUIDField(_('UUID'),default=uuid.uuid4,primary_key=True,editable=False)
+    uuid = models.UUIDField(_('UUID'),default=uuid.uuid4,primary_key=True,editable=False)
     
     unverified_phone = models.EmailField(_("Unverified Phone"),max_length=255,unique=True)
     secret_key = models.CharField(
@@ -33,7 +33,7 @@ class VerificationDevice(Device):
                    "The next token must be at a higher counter value."
                    "It makes sure a token is used only once.")
     )
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     verified = models.BooleanField(default=False)
 
     step = models.IntegerField(default=300)

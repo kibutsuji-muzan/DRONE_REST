@@ -1,7 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from droneshop.models.product import Product, ProductDetailValue, ProductImage, ProductVerificationRequest
 from droneshop.models.category import Category, CategoryByUser
-from droneshop.models.orderAcustomer import orderedItem
+from droneshop.models.orders import orderedItem
 
 class ProductImageSerializer(ModelSerializer):
 

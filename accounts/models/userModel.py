@@ -10,7 +10,8 @@ class User(AbstractUser):
     GENDER = [('MALE', 'MALE'), ('FEMALE', 'FEMALE'), ('OTHER', 'OTHER')]
     username = None
 
-    user_uuid = models.UUIDField(_('UUID'),default=uuid.uuid4,primary_key=True,editable=False)
+    user_uuid = models.UUIDField(_('UUID'),default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+
     email = models.EmailField(_("Email"), max_length=254, unique=True)
     phone_number = PhoneNumberField()
     gender = models.CharField(_('Gender'),choices=GENDER, max_length=6, blank=True)

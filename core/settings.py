@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    
+    'knox',
     'phonenumber_field',
     'rest_framework',
     'mptt',
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'droneshop.apps.DroneshopConfig',
     'droneservice.apps.DroneserviceConfig',
     'extras.apps.ExtrasConfig',
+    'droneblog.apps.DroneblogConfig',
 
 ]
 
@@ -116,6 +118,11 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL='accounts.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+}
+# AUTHENTICATION_BACKENDS = ['accounts.customAuth.CustomAuthenticationBackend']
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/

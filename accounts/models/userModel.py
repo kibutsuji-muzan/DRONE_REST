@@ -9,11 +9,13 @@ class User(AbstractUser):
 
     GENDER = [('MALE', 'MALE'), ('FEMALE', 'FEMALE'), ('OTHER', 'OTHER')]
     username = None
+    first_name = None
+    last_name = None
 
     user_uuid = models.UUIDField(_('UUID'),default=uuid.uuid4, unique=True, primary_key=True, editable=False)
 
-    email = models.EmailField(_("Email"), max_length=254, unique=True)
-    phone_number = PhoneNumberField()
+    email = models.EmailField(_("Email"), max_length=254, unique=True,blank=True)
+    phone = PhoneNumberField(blank=True)
     gender = models.CharField(_('Gender'),choices=GENDER, max_length=6, blank=True)
     birthday = models.DateField(_('Birth Date'), default=timezone.now, blank=True)
 
@@ -24,7 +26,7 @@ class User(AbstractUser):
     object = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['phone', 'gender', 'birthday']
 
     def __str__(self):
         return self.email

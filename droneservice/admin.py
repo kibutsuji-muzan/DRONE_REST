@@ -1,6 +1,8 @@
 from django.contrib import admin
 from droneservice.models.service import Service, ServiceImage, ServiceVerificationRequest,ServiceDetailValue
 from droneservice.models.order import orderedService ,customer
+
+
 class ServiceImageInline(admin.StackedInline):
     model = ServiceImage
 
@@ -16,10 +18,6 @@ class OrderInline(admin.StackedInline):
 @admin.register(customer)
 class CustomerAdmin(admin.ModelAdmin):
     inlines = [OrderInline]
-
-# @admin.register(ServiceType)
-# class ServiceTypeAdmin(admin.ModelAdmin):
-#     inlines = [ServiceDetailInline]
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):

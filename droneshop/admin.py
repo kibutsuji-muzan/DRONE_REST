@@ -8,8 +8,6 @@ from droneshop.models.orders import (orderedItem, customer)
 admin.site.register(Category)
 admin.site.register(CategoryByUser)
 admin.site.register(ProductVerificationRequest)
-# class ProductDetailInline(admin.TabularInline):
-#     model = ProductDetail
 
 class ProductImageInline(admin.StackedInline):
     model = ProductImage

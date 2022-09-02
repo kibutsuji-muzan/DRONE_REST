@@ -15,7 +15,7 @@ class ContactUs(models.Model):
     created_at = models.DateTimeField(auto_now=True,editable=False)
     
     def __str__(self):
-        return self.phone
+        return self.email
 
     class Meta:
         verbose_name = _("Contact Us")

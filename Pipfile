@@ -16,6 +16,8 @@ django-phonenumber-field = {extras = ["phonenumbers"], version = "*"}
 django-admin-volt = "*"
 pyyaml = "*"
 uritemplate = "*"
+django-oauth-toolkit = "==2.1.0"
+django-rest-knox = "==4.2.0"
 
 [dev-packages]
 autopep8 = "*"

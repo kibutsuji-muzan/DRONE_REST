@@ -20,6 +20,7 @@ class ProfileImageInline(admin.StackedInline):
 @admin.register(User)
 class Admin(admin.ModelAdmin):
     inlines = [UserProfileInline, VerificationDeviceInline]
+    list_display = ('__str__',)
 
 @admin.register(UserProfile)
 class Admin(admin.ModelAdmin):
@@ -27,4 +28,4 @@ class Admin(admin.ModelAdmin):
 
 admin.site.register(Session)
 admin.site.register(ProfileType)
-# admin.site.register(LoggedInUser)
+admin.site.register(VerificationDevice)

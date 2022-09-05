@@ -7,14 +7,16 @@ from accounts.models.profileModel import UserProfile
 
 
 @receiver(post_save, sender=User)
-def CreateOtp(sender, instance, created, **kwargs):
+def createOtp(sender, instance, created, **kwargs):
     if created:
-        VerificationDevice.objects.create(unverified_phone=instance.email, user = instance)
+        VerificationDevice.objects.get_or_create(unverified_phone=(instance.email if instance.email else str(instance.phone)), user = instance)
 
 @receiver(post_save, sender=User)
 def createProfile(sender, instance, created, **kwargs):
-    if created:
-        UserProfile.objects.create(first_name=instance.first_name, last_name= instance.last_name,email = instance.email, phone= instance.phone_number, birthday = instance.birthday, gender = instance.gender,user = instance)
+    if instance.email:
+        UserProfile.objects.get_or_create(email = instance.email , birthday = instance.birthday, gender = instance.gender,user = instance)
+    else:
+        UserProfile.objects.get_or_create(phone = instance.phone , birthday = instance.birthday, gender = instance.gender,user = instance)
 
 # @receiver(user_logged_in)
 # def on_user_logged_in(sender, request, **kwargs):

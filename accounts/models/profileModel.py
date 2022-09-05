@@ -5,7 +5,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 import uuid
 
 class ProfileType(models.Model):
-    uuid = models.UUIDField(_("UUID"), primary_key=True, editable=False, unique=True, default=uuid.uuid4)
+    id = models.UUIDField(_("UUID"), primary_key=True, editable=False, unique=True, default=uuid.uuid4)
 
     name= models.CharField(_("Name"),max_length=30, blank=True)
     created_at = models.DateTimeField(auto_now=True,editable=False)
@@ -21,20 +21,19 @@ class ProfileType(models.Model):
 class UserProfile(models.Model):
     GENDER = [('MALE', 'MALE'), ('FEMALE', 'FEMALE'), ('OTHER', 'OTHER')]
 
-    uuid = models.UUIDField(_("UUID"), primary_key=True, editable=False, unique=True, default=uuid.uuid4)
+    id = models.UUIDField(_("UUID"), primary_key=True, editable=False, unique=True, default=uuid.uuid4)
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name=_("User"))
 
     first_name = models.CharField(_('First Name'), max_length=20)
     last_name = models.CharField(_('Last Name'), max_length=20)
-    email = models.EmailField(_('Email'), max_length=200, unique=True)
-    phone = PhoneNumberField()
-    birthday = models.DateField(_('Birth Date'))
-    gender = models.CharField(_('Gender'), max_length=6, choices=GENDER)
+    email = models.EmailField(_('Email'), max_length=200, null=True, blank=True)
+    phone = PhoneNumberField(null=True, blank=True)
+    birthday = models.DateField(_('Birth Date'),blank=True,null=True)
+    gender = models.CharField(_('Gender'), max_length=6, choices=GENDER,blank=True,null=True)
 
     def __str__(self):
-        full_name = self.first_name + self.last_name
-        return full_name
+        return self.email if self.email else str(self.phone)
 
     class Meta:
         verbose_name = _("User Profile")
@@ -42,9 +41,9 @@ class UserProfile(models.Model):
         
 
 class ProfileImage(models.Model):
-    uuid = models.UUIDField(_("UUID"), primary_key=True, editable=False, unique=True, default=uuid.uuid4)
+    id = models.UUIDField(_("UUID"), primary_key=True, editable=False, unique=True, default=uuid.uuid4)
 
-    profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, verbose_name=_("Profile"))
+    profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, verbose_name=_("Profile"), related_name='profile_image')
 
     image = models.ImageField(_("Image"), upload_to="ProfileImages/", default="ProfileImages/default.png")
     alt_txt = models.CharField(_("Alternative Text"), max_length=20, default="Your Profile Image")

@@ -18,6 +18,8 @@ pyyaml = "*"
 uritemplate = "*"
 django-oauth-toolkit = "==2.1.0"
 django-rest-knox = "==4.2.0"
+email-validator = "==1.2.1"
+phonenumbers = "*"
 
 [dev-packages]
 autopep8 = "*"

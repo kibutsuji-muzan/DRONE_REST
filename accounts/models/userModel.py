@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from accounts.manager import UserManager
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
+
 class User(AbstractUser):
 
     GENDER = [('MALE', 'MALE'), ('FEMALE', 'FEMALE'), ('OTHER', 'OTHER')]
@@ -12,12 +13,12 @@ class User(AbstractUser):
     first_name = None
     last_name = None
 
-    user_uuid = models.UUIDField(_('UUID'),default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+    id = models.UUIDField(_('UUID'),default=uuid.uuid4,null=False , primary_key=True, editable=False)
 
-    email = models.EmailField(_("Email"), max_length=254, unique=True,blank=True)
-    phone = PhoneNumberField(blank=True)
-    gender = models.CharField(_('Gender'),choices=GENDER, max_length=6, blank=True)
-    birthday = models.DateField(_('Birth Date'), default=timezone.now, blank=True)
+    email = models.EmailField(_("Email"), max_length=254, null=True, blank=True, unique=True)
+    phone = PhoneNumberField(_('Phone Number'), blank=True, null=True)
+    gender = models.CharField(_('Gender'),choices=GENDER, max_length=6, blank=True,null=True)
+    birthday = models.DateField(_('Birth Date'), blank=True,null=True)
 
     created_at = models.DateTimeField(auto_now=True,editable=False)
     updated_at = models.DateTimeField(auto_now=True)
@@ -26,10 +27,10 @@ class User(AbstractUser):
     object = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['phone', 'gender', 'birthday']
+    REQUIRED_FIELDS = []
 
     def __str__(self):
-        return self.email
+        return self.email if self.email else str(self.phone)
     class Meta:
         verbose_name = _("User")
         verbose_name_plural = _("Users")

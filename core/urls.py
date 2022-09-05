@@ -18,7 +18,6 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.schemas import get_schema_view
-from accounts.views.signup_in import SignIn, SignUp
 
 schemaview = get_schema_view(
     title="Drone E-Shop",
@@ -28,9 +27,9 @@ schemaview = get_schema_view(
 )
 
 urlpatterns = [
-    path('aaa', SignUp.as_view()),
-    path('bbb', SignIn.as_view()),
     path('admin/', admin.site.urls),
     re_path(r'api/auth/', include('knox.urls')),
-    path('schema/', schemaview)
+    path('schema/', schemaview),
+    path('accounts/', include('accounts.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

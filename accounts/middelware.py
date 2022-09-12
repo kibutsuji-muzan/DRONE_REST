@@ -1,4 +1,5 @@
 from django.contrib.sessions.models import Session
+from accounts.models.userModel import PassResetToken
 
 class OneSessionPerUserMiddleware:
     # Called only once when the web server starts

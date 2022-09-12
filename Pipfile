@@ -16,10 +16,17 @@ django-phonenumber-field = {extras = ["phonenumbers"], version = "*"}
 django-admin-volt = "*"
 pyyaml = "*"
 uritemplate = "*"
-django-oauth-toolkit = "==2.1.0"
 django-rest-knox = "==4.2.0"
-email-validator = "==1.2.1"
 phonenumbers = "*"
+django-cors-headers = "*"
+pip = "*"
+django-post-office = "==3.6.1"
+pyisemail = "*"
+django-upload-validator = "*"
+django-sms = {extras = ["twilio"], version = "*"}
+celery = "*"
+redis = "*"
+django-celery-results = "*"
 
 [dev-packages]
 autopep8 = "*"

@@ -17,4 +17,3 @@ class SellersPage(APIView):
         query = Product.objects.filter(product_uuid=slug)
         serializer = ProductSerializer(query, many=True)
         return Response(serializer.data)
-

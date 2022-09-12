@@ -41,19 +41,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
+    #other packages
+    'post_office',
     'knox',
     'phonenumber_field',
     'rest_framework',
     'mptt',
     'corsheaders',
+    'sms',
+    'django_celery_results',
 
+    #custom apps
     'accounts.apps.AccountsConfig',
-    # 'droneshop.apps.DroneshopConfig',
-    # 'droneservice.apps.DroneserviceConfig',
-    # 'extras.apps.ExtrasConfig',
-    # 'droneblog.apps.DroneblogConfig',
-
+    'droneshop.apps.DroneshopConfig',
+    'droneservice.apps.DroneserviceConfig',
+    'extras.apps.ExtrasConfig',
+    'droneblog.apps.DroneblogConfig',
 ]
 
 MIDDLEWARE = [
@@ -173,8 +177,46 @@ CORS_ALLOWED_ORIGINS = [
 REST_KNOX = {
     'SECURE_HASH_ALGORITHM':'cryptography.hazmat.primitives.hashes.SHA512',
     'AUTH_TOKEN_CHARACTER_LENGTH': 64, # By default, it is set to 64 characters (this shouldn't need changing).
-    'TOKEN_TTL': timedelta(minutes=45), # The default is 10 hours i.e., timedelta(hours=10)).
+    'TOKEN_TTL': timedelta(minutes=720), # The default is 10 hours i.e., timedelta(hours=10)).
     'TOKEN_LIMIT_PER_USER': None, # By default, this option is disabled and set to None -- thus no limit.
     'AUTO_REFRESH': False, # This defines if the token expiry time is extended by TOKEN_TTL each time the token is used.
     'EXPIRY_DATETIME_FORMAT': api_settings.DATETIME_FORMAT,
 }
+
+#Emailing Settings
+
+EMAIL_BACKEND = 'post_office.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# POST_OFFICE = {
+#     'DEFAULT_PRIORITY' : 'now'
+# }
+
+# EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp-mail.outlook.com'
+EMAIL_HOST_USER = 'ansari.kaifi7348@outlook.com'
+EMAIL_PORT = 587
+EMAIL_HOST_PASSWORD = '@rafatnaeem786'
+EMAIL_USE_TLS = True
+# DEFAULT_FROM_EMAIL = 'heller.james7348@gmail.com'
+
+#Phone message Settings
+
+DEFAULT_FROM_SMS = '+12062102736'
+# SMS_BACKEND = 'sms.backends.dummy.SmsBackend'
+# SMS_BACKEND = 'sms.backends.locmem.SmsBackend'
+SMS_BACKEND = 'sms.backends.twilio.SmsBackend'
+
+TWILIO_ACCOUNT_SID = 'ACa99d512ef430c962637a8794fa160ba9'
+TWILIO_AUTH_TOKEN = 'fef43f2ec5e02a8ea0b7d6e47ac9c783'
+
+#Celery Settings
+
+# CELERY_TIMEZONE = "Australia/Tasmania"
+CELERY_RESULT_BACKEND = 'django-db'
+
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+CELERY_BROKER_URL = "redis://localhost:8888"
+CELERY_RESULT_BACKEND = "redis://localhost:8888"

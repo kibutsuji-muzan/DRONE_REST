@@ -1,1 +1,2 @@
-from .userModel import User
+from .userModel import *
+from .profileModel import *

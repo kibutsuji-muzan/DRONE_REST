@@ -15,8 +15,7 @@ def default_key():
 #django_otp Device model to generate and verify token.
 class VerificationDevice(Device):
 
-    uuid = models.UUIDField(_('UUID'),default=uuid.uuid4,primary_key=True,editable=False)
-    
+    name = None
     unverified_phone = models.EmailField(_("Unverified Phone"),max_length=255,unique=True)
     secret_key = models.CharField(
         _("Secret Key"),
@@ -33,7 +32,7 @@ class VerificationDevice(Device):
                    "The next token must be at a higher counter value."
                    "It makes sure a token is used only once.")
     )
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, verbose_name=_("User"), on_delete=models.CASCADE, primary_key=True, editable=True, related_name='verification_device')
     verified = models.BooleanField(default=False)
 
     step = models.IntegerField(default=300)
@@ -49,8 +48,8 @@ class VerificationDevice(Device):
 
     def totp_obj(self):
         totp = TOTP(key=self.bin_key, step=self.step, digits=self.digits)
-        time.time()
-        # totp.time = time()
+        # time.time()
+        totp.time = time()
         return totp
 
     def generate_challenge(self):
@@ -59,8 +58,7 @@ class VerificationDevice(Device):
 
         message = _("Your token for Cadasta is {token_value}."
                    " It is valid for {time_validity} minutes.")
-        message = message.format(
-        token_value=token, time_validity=self.step // 60)
+        message = message.format(token_value=token, time_validity=self.step // 60)
 
         logging.debug("Token has been sent to %s " % self.unverified_phone)
         logging.debug("%s" % message)
@@ -73,8 +71,7 @@ class VerificationDevice(Device):
             token = int(token)
         except ValueError:
             self.verified = False
-        if ((totp.t() > self.last_verified_counter) and
-                (totp.verify(token, tolerance=tolerance))):
+        if ((totp.t() > self.last_verified_counter) and (totp.verify(token, tolerance=tolerance))):
             self.last_verified_counter = totp.t()
             self.verified = True
             self.save()
@@ -83,6 +80,5 @@ class VerificationDevice(Device):
         return self.verified
 
     class Meta:
-        # model_lable = _("VerificationDevice")
         verbose_name = _("Verification Device")
         verbose_name_plural = _("Verification Devices")

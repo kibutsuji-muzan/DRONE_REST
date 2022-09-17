@@ -1,3 +1,3 @@
 from .contactUs import *
 
-from .portfolio import *
+from accounts.models.portfolio import *

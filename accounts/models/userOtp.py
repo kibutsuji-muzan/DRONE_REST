@@ -6,8 +6,7 @@ from time import time
 from binascii import unhexlify
 import logging
 from django.utils.translation import gettext_lazy as _
-from accounts.models.userModel import User
-import uuid
+from accounts.models.userModel import User, expiryTime
 
 def default_key():
     return random_hex(20)
@@ -82,3 +81,14 @@ class VerificationDevice(Device):
     class Meta:
         verbose_name = _("Verification Device")
         verbose_name_plural = _("Verification Devices")
+
+class OtpToken(models.Model):
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='otp_token')
+    token = models.UUIDField(_("Token-Key"), default=default_key, validators=[hex_validator],)
+    
+    expiry = models.TimeField(_("Expiry"), auto_now=False, auto_now_add=False, default=expiryTime)
+    created_at = models.TimeField(_("Ceated At"), auto_now_add=True)
+
+    def __str__(self):
+        return self.token

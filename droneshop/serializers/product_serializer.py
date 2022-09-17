@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
+
 from droneshop.models.product import Product, ProductDetailValue, ProductImage, ProductVerificationRequest
-from droneshop.models.category import Category, CategoryByUser
 from droneshop.models.orders import orderedItem
 
 class ProductImageSerializer(ModelSerializer):
@@ -28,12 +28,7 @@ class ProductSerializer(ModelSerializer):
     product_detail = ProductDetailSerializer(many=True)
     class Meta:
         model = Product
-        fields = ['product_detail','product_image','owner','category','categoryByUser','product_uuid','name','title','desc','slug','price']
+        fields = ['product_detail','product_image','owner','category','categoryByUser','uuid','name','title','desc','slug','price']
 
-class CategorySerializer(ModelSerializer):
-
-    class Meta:
-        model = Category
-        fields = ["name", "slug"]
 
 

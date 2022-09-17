@@ -55,10 +55,11 @@ INSTALLED_APPS = [
     #custom apps
     'accounts.apps.AccountsConfig',
     'droneshop.apps.DroneshopConfig',
-    'droneservice.apps.DroneserviceConfig',
-    'extras.apps.ExtrasConfig',
-    'droneblog.apps.DroneblogConfig',
+    # 'droneservice.apps.DroneserviceConfig',
+    # 'extras.apps.ExtrasConfig',
+    # 'droneblog.apps.DroneblogConfig',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

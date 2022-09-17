@@ -24,12 +24,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.db.models import Q
 
-
-class AccountsView(viewsets.GenericViewSet):
-
-    http_method_names = ['post','get','delete']
-    serializer_class = SignUpSerializer
-
+class Base:
     def get_context(self):
         return {'request': self.request, 'format': self.format_kwarg, 'view': self}
 
@@ -46,11 +41,6 @@ class AccountsView(viewsets.GenericViewSet):
         datetime_format = self.get_expiry_datetime_format()
         return DateTimeField(format=datetime_format).to_representation(expiry)
 
-    def get_otp(self, uuid):
-        totp = VerificationDevice.objects.get(user=uuid)
-        otp = totp.generate_challenge()
-        return(otp)
-
     def get_post_response_data(self, request, token, instance, user):
         data = {
             'expiry': self.format_expiry_datetime(instance.expiry),
@@ -58,8 +48,7 @@ class AccountsView(viewsets.GenericViewSet):
         }
         if request is not None:
             if UserSerializer is not None:
-                data["user"] = UserSerializer(
-                    user, context=self.get_context()).data
+                data["user"] = UserSerializer(user, context=self.get_context()).data
         else:
             if UserSerializer is not None:
                 data["user"] = UserSerializer(user).data
@@ -80,68 +69,31 @@ class AccountsView(viewsets.GenericViewSet):
         token = PassResetToken.objects.create(user=user)
         return token
 
-
-    @action(methods=['post'], detail=False, url_name='signup', url_path='signup')
-    def signup(self, request):
-
-        serializer = self.get_serializer(data=request.data)
-
-        if serializer.is_valid(raise_exception=True):
-            print('im in')
-            data = serializer.data
-            user = serializer.create(data=data)
-            token_ttl = self.get_token_ttl()
-            print(user)
-            if user:
-                instance, token = AuthToken.objects.create(user, token_ttl)
-                print(instance)
-                print(token)
-                data = self.get_post_response_data(token=token, instance=instance, user=user, request=None)
-                return Response(data)
-        return Response({'status': 400})
-
-
-    @action(methods=['post'], detail=False, url_name='signin', url_path='signin')
-    def signin(self, request, format=None):
-
-        token_limit_per_user = self.get_token_limit_per_user()
-        serializer = SignInSerializer(data=request.data)
-
-        if serializer.is_valid(raise_exception=True):
-            data = serializer.data
-            try:
-                user = User.objects.get(phone=data['email_or_phone'])
-            except:
-                user = User.objects.get(email=data['email_or_phone'])
-
-            if not user.is_active:
-                return Response(f'id: {user.id}')
-
-            if token_limit_per_user is not None:
-                now = timezone.now()
-                token = request.user.auth_token_set.filter(expiry__gt=now)
-                if token.count() >= token_limit_per_user:
-                    return Response(
-                        {"error": "Maximum amount of tokens allowed per user exceeded."},
-                        status=status.HTTP_403_FORBIDDEN
-                    )
-
-            token_ttl = self.get_token_ttl()
-            instance, token = AuthToken.objects.create(user, token_ttl)
-            print(instance, token)
-            data = self.get_post_response_data(request=request, token=token, instance=instance, user=user)
-            return Response(data)
-
-
-    @action(methods=['get'], detail=True, url_name='get_otp', url_path='get-otp')
-    def getotp(self, request, pk):
-        print(pk)
+    def get_user(self,pk):
         try:
             user = User.objects.get(id=pk)
         except:
             return Response('User with This Key Not Exixt', status=status.HTTP_400_BAD_REQUEST)
+        return user
+
+    def get_otp(self, user):
+        totp = user.verification_device
+        otp = totp.generate_challenge()
+        return otp
+
+
+
+
+class OTPManagement:
+
+    @action(methods=['get'], detail=True, url_name='get_otp', url_path='get-otp')
+    def getotp(self, request, pk):
+        try:
+            user = User.objects.get(id=pk)
+        except:
+            return Response('User With This Key Not Exist')
         if not user.is_active:
-            otp = self.get_otp(uuid=pk)
+            otp = self.get_otp(user)
 
             smsdata = {
             'message' : f'Hi There Your Otp is {otp}',
@@ -173,8 +125,7 @@ class AccountsView(viewsets.GenericViewSet):
         try:
             user = User.objects.get(id=pk)
         except:
-            return Response('User With This Token Does Not Exist', status=status.HTTP_400_BAD_REQUEST)
-
+            return Response('User With This Key Not Exist')
         totp = user.verification_device
         otp = request.data.get('otp')
 
@@ -186,7 +137,9 @@ class AccountsView(viewsets.GenericViewSet):
         return Response('OTP is incorrect or not been sent', status.HTTP_400_BAD_REQUEST)
 
 
-    @action(methods=['post'], detail=False, url_name='get-reset-link', url_path='get-reset-link')
+class PasswordManagement:
+
+    @action(methods=['post'], detail=False, url_name='get_reset_link', url_path='get-reset-link')
     def get_reset_link(self, request):
         
         email_or_phone = self.valid_email_phone(request.data.get('email_or_phone'))
@@ -233,7 +186,7 @@ class AccountsView(viewsets.GenericViewSet):
         return Response('sheesh')
 
 
-    @action(methods=['post'], detail=True, url_name='pass-reset', url_path='pass-reset')
+    @action(methods=['put'], detail=True, url_name='pass_reset', url_path='pass-reset')
     def password_reset(self, request, pk):
         try:
             token = PassResetToken.objects.get(token=pk)
@@ -247,10 +200,65 @@ class AccountsView(viewsets.GenericViewSet):
         return Response('Something Went Wrong', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-    @action(methods=['delete'], detail=True, url_name='delete-user', url_path='delete-user', permission_classes=[IsAuthenticated,])
-    def delete_user(self, request, pk):
+
+
+#Master Class Used In Urls
+class AccountsManagement(Base, OTPManagement, PasswordManagement, viewsets.GenericViewSet):
+
+    http_method_names = ['post','get','delete']
+    serializer_class = SignUpSerializer
+
+
+    @action(methods=['post'], detail=False, url_name='signup', url_path='signup')
+    def signup(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            print('im in')
+            data = serializer.data
+            user = serializer.create(data=data)
+            if user:
+                data = self.get_post_response_data(user=user, request=None)
+                return Response(serializer.data)
+        return Response({'status': 400})
+
+
+    @action(methods=['post'], detail=False, url_name='signin', url_path='signin')
+    def signin(self, request, format=None):
+
+        token_limit_per_user = self.get_token_limit_per_user()
+        serializer = SignInSerializer(data=request.data, context={'TTL':token_limit_per_user})
+
+        if serializer.is_valid(raise_exception=True):
+            data = serializer.data
+            try:
+                user = User.objects.get(phone=data['email_or_phone'])
+            except:
+                user = User.objects.get(email=data['email_or_phone'])
+
+            if not user.is_active:
+                return Response(f'id: {user.id}')
+
+            if token_limit_per_user is not None:
+                now = timezone.now()
+                token = request.user.auth_token_set.filter(expiry__gt=now)
+                if token.count() >= token_limit_per_user:
+                    return Response(
+                        {"error": "Maximum amount of tokens allowed per user exceeded."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
+            token_ttl = self.get_token_ttl()
+            instance, token = AuthToken.objects.create(user, token_ttl)
+            print(instance, token)
+            data = self.get_post_response_data(request=request, token=token, instance=instance, user=user)
+            print(data)
+            return Response(data)
+
+
+    @action(methods=['delete'], detail=False, url_name='delete_user', url_path='delete-user', permission_classes=[IsAuthenticated,])
+    def delete_user(self, request):
         try:
-            user = User.objects.get(id = pk)
+            user = User.objects.get(user = request.user)
         except:
             return Response('User With This Token Does Not Exist', status=status.HTTP_400_BAD_REQUEST)
         if (request.user == user):
@@ -261,3 +269,4 @@ class AccountsView(viewsets.GenericViewSet):
 
             return Response('Password Is Incorrect', status=status.HTTP_400_BAD_REQUEST)
         return Response('Your User Token Or Auth Token Are Not Same', status=status.HTTP_400_BAD_REQUEST)
+

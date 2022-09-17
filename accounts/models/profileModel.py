@@ -6,12 +6,6 @@ from phonenumber_field.modelfields import PhoneNumberField
 from upload_validator import FileTypeValidator
 
 
-validator = FileTypeValidator(
-    allowed_types=['application/msword'],
-    allowed_extensions=['.doc', '.docx']
-)
-
-
 class UserProfile(models.Model):
     GENDER = [('MALE', 'MALE'), ('FEMALE', 'FEMALE'), ('OTHER', 'OTHER')]
 

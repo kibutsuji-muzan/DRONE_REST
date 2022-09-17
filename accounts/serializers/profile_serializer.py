@@ -1,4 +1,4 @@
-from accounts.models.userModel import User
+from accounts.models.userModel import User, UpdateRequest, ShopOrganizationType
 from accounts.models.profileModel import UserProfile, ProfileImage
 
 from rest_framework import serializers
@@ -10,7 +10,15 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'phone', ]
+        fields = ['id','email', 'phone', 'email_verified', 'phone_verified']
+
+
+class OrganizationTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ShopOrganizationType
+        fields = ['type']
+
 
 
 class ProfileImageSerializer(serializers.ModelSerializer):
@@ -27,11 +35,12 @@ class ProfileImageSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
 
-    profile_image = ProfileImageSerializer()
+    profile_image = ProfileImageSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = UserProfile
-        fields = ['email', 'phone', 'first_name', 'last_name', 'gender', 'birthday', 'profile_image']
+        fields = ['user', 'first_name', 'last_name', 'gender', 'birthday', 'profile_image']
 
     def validate(self, data):
         if data.get('email'):
@@ -47,14 +56,34 @@ class ProfileSerializer(serializers.ModelSerializer):
         return data
         
     def update(self, instance, data):
-        instance.first_name = data.get('first_name')
-        instance.last_name = data.get('last_name')
-        instance.email = data.get('email')
-        instance.gender = data.get('gender')
-        instance.birthday = data.get('birthday')
+        instance.user_profile.first_name = data.get('first_name')
+        instance.user_profile.last_name = data.get('last_name')
+        instance.user_profile.email = data.get('email')#remove it
+        instance.user_profile.gender = data.get('gender')
+        instance.user_profile.birthday = data.get('birthday')
 
         p_s = ProfileImageSerializer(data=data.get('profile_image'))
         if p_s.is_valid(raise_exception=True):
-            p_s.update(instance=instance.profile_image, data=data.get('profile_image'))
-            instance.save()
+            print(p_s.data)
+            p_s.update(instance=instance.user_profile.profile_image, data=data.get('profile_image'))
+            instance.user_profile.save()
         return instance
+
+class RequestUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UpdateRequest
+        fields = ['desc', 'organization_name', 'phone', 'org']
+
+    def create(self, data):
+        try:
+            updateto = ShopOrganizationType.objects.get(type = data.get('organization_type'))
+        except:
+            return serializers.ValidationError('Wrong User Type')
+
+        if updateto:
+            user = self.context.get('request').user
+            print(user)
+            self.Meta.model.objects.create(**data)
+            return data
+        return serializers.ValidationError('Wrong User Type')

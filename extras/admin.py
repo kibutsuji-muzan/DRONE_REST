@@ -1,17 +1,21 @@
 from django.contrib import admin
 
-from extras.models.portfolio import Portfolio, PortfolioDetailValue, PortfolioImage
+from accounts.models.portfolio import Portfolio, PortfolioPost, PostImage
 from extras.models.contactUs import ContactUs, Complaints, Reports, Review
 
-class PortfolioDetailInline(admin.TabularInline):
-    model = PortfolioDetailValue
+class PostImageInline(admin.TabularInline):
+    model = PostImage
 
-class PortfolioImageInline(admin.TabularInline):
-    model = PortfolioImage
+class PostInline(admin.TabularInline):
+    model = PortfolioPost
 
 @admin.register(Portfolio)
 class PortfolioAdmin(admin.ModelAdmin):
-    inlines = [PortfolioImageInline, PortfolioDetailInline]
+    inlines = [PostInline]
+
+@admin.register(PortfolioPost)
+class PostAdmin(admin.ModelAdmin):
+    inlines = [PostImageInline]
 
 @admin.register(Complaints)
 class ComplaintsAdmin(admin.ModelAdmin):
@@ -28,3 +32,4 @@ class ComplaintsAdmin(admin.ModelAdmin):
 @admin.register(Review)
 class ComplaintsAdmin(admin.ModelAdmin):
     pass
+

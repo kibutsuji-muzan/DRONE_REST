@@ -1,13 +1,10 @@
-from urllib import request
 from rest_framework import serializers
 
-from django.db.models import Q
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
 from accounts.models.userModel import User
 
-import re
 from phonenumbers import parse as validate_phone
 from pyisemail import is_email as validate_email
 
@@ -21,14 +18,14 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         try:
-            print(data['email_or_phone'])
+            # print(data['email_or_phone'])
             if User.objects.get(phone=data['email_or_phone']):
-                print('p')
+                # print('p')
                 error = 'phone'
         except:
             try:
                 if User.objects.get(email=data['email_or_phone']):
-                    print('e')
+                    # print('e')
                     error = 'email'
             except:
                 return data
@@ -42,8 +39,7 @@ class SignUpSerializer(serializers.ModelSerializer):
                 'User with This phone Already Exist')
 
     def valid_email_phone(self, email_or_phone):
-        email = validate_email(address=email_or_phone, check_dns=True)
-        if email:
+        if validate_email(address=email_or_phone, check_dns=True):
             return {'email': email_or_phone, 'phone': False}
         try:
             if validate_phone(email_or_phone):
@@ -53,11 +49,11 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     def create(self, data):
         email_or_phone = self.valid_email_phone(email_or_phone=data.get('email_or_phone'))
-        print(email_or_phone)
+        # print(email_or_phone)
         errors = []
         try:
             if validate_password(data.get('password')) is None:
-                print('password is valid')
+                # print('password is valid')
                 if email_or_phone.get('email'):
                     user = User.objects.create(email=email_or_phone.get('email'))
                     user.set_password(data.get('password'))
@@ -71,9 +67,9 @@ class SignUpSerializer(serializers.ModelSerializer):
                     user.save()
                     return user
         except ValidationError as e:
-            print('password not valid or other exception')
+            # print('password not valid or other exception')
             for error in e:
-                print(error)
+                # print(error)
                 errors.append(str(error))
             raise serializers.ValidationError(errors)
 
@@ -96,11 +92,11 @@ class SignInSerializer(serializers.Serializer):
 
 
         if user:
-            print(user)
+            # print(user)
             return user
 
     def authenticate(self ,password, user):
-        print('im in')
+        # print('im in')
         if user.check_password(password):
             return True
         else:
@@ -108,12 +104,10 @@ class SignInSerializer(serializers.Serializer):
 
     def validate(self, data):
         user = self.valid_user(data.get('email_or_phone'))
-        print(user)
         if user and user.is_active:
-            print('im in')
+            # print('im in')
             auth = self.authenticate(password=data.get('password'), user=user)
             if auth:
-                print(user)
                 return data
         raise serializers.ValidationError('User Is Not Active')
 
@@ -138,7 +132,7 @@ class PasswordResetSerializer(serializers.ModelSerializer):
                     return data
             except ValidationError as e:
                 for error in e:
-                    print(error)
+                    # print(error)
                     errors.append(str(error))
                 raise serializers.ValidationError(errors)
         raise serializers.ValidationError('Passwords Must Be Same')

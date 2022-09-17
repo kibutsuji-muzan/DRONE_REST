@@ -1,9 +1,11 @@
 from django.contrib import admin
 from django.contrib import admin
 
-from accounts.models.userModel import User, PassResetToken, UserType, UserUpdateRequest
+from accounts.models.userModel import User, PassResetToken, ShopOrganizationType, UpdateRequest, UserUpdateFiles
 from accounts.models.profileModel import UserProfile, ProfileImage
 from accounts.models.userOtp import VerificationDevice
+from accounts.models.portfolio import Portfolio, PortfolioPost, PostImage
+
 from django.contrib.sessions.models import Session
 
 
@@ -16,9 +18,30 @@ class VerificationDeviceInline(admin.StackedInline):
 class ProfileImageInline(admin.StackedInline):
     model = ProfileImage
 
+class UpdateRequestInline(admin.StackedInline):
+    model = UpdateRequest
+    extra = 3
+
+class UpdateFileInline(admin.TabularInline):
+    model = UserUpdateFiles
+
+class PostImageInline(admin.TabularInline):
+    model = PostImage
+
+class PostInline(admin.TabularInline):
+    model = PortfolioPost
+
+@admin.register(Portfolio)
+class PortfolioAdmin(admin.ModelAdmin):
+    inlines = [PostInline]
+
+@admin.register(PortfolioPost)
+class PostAdmin(admin.ModelAdmin):
+    inlines = [PostImageInline]
+
 @admin.register(User)
 class Admin(admin.ModelAdmin):
-    inlines = [UserProfileInline, VerificationDeviceInline]
+    inlines = [UserProfileInline, VerificationDeviceInline, UpdateRequestInline]
     list_display = ('__str__',)
 
 @admin.register(UserProfile)
@@ -29,13 +52,10 @@ class Admin(admin.ModelAdmin):
 class PassRestTokenAdmin(admin.ModelAdmin):
     list_display = ('user',)
 
-# @admin.register(VerificationDevice)
-# class AdminVerDevice(admin.ModelAdmin):
-#     list_display = ('unverified_phone',)
 
-@admin.register(UserUpdateRequest)
-class UpdateRequestAdmin(admin.ModelAdmin):
-    pass
+@admin.register(UpdateRequest)
+class AdminVerDevice(admin.ModelAdmin):
+    inlines = [UpdateFileInline]
 
 admin.site.register(Session)
-admin.site.register(UserType)
+admin.site.register(ShopOrganizationType)

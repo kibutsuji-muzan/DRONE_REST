@@ -1,4 +1,4 @@
-from accounts.models.userModel import User, UpdateRequest, ShopOrganizationType
+from accounts.models.userModel import User, UpdateRequest, OrganizationType
 from accounts.models.profileModel import UserProfile, ProfileImage
 
 from rest_framework import serializers
@@ -16,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
 class OrganizationTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = ShopOrganizationType
+        model = OrganizationType
         fields = ['type']
 
 
@@ -77,9 +77,9 @@ class RequestUpdateSerializer(serializers.ModelSerializer):
 
     def create(self, data):
         try:
-            updateto = ShopOrganizationType.objects.get(type = data.get('organization_type'))
+            updateto = OrganizationType.objects.get(type = data.get('organization_type'))
         except:
-            return serializers.ValidationError('Wrong User Type')
+            raise serializers.ValidationError('Wrong User Type')
 
         if updateto:
             user = self.context.get('request').user

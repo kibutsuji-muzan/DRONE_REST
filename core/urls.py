@@ -18,10 +18,14 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from droneshop.views.shop_home import Index
+
+from droneshop.views.shop import Index, Others
+
 from accounts.views.accounts import AccountsManagement
 from accounts.views.profile import Profile
 from accounts.views.portfolio import PortfolioView
+
+
 from rest_framework.routers import DefaultRouter
 from rest_framework.schemas import get_schema_view
 
@@ -38,6 +42,7 @@ router.register(r'accounts', AccountsManagement, basename='accounts')
 router.register(r'profile', Profile, basename='profile')
 router.register(r'portfolio', PortfolioView, basename='portfolio')
 router.register(r'drone-shop', Index, basename='drone_shop')
+router.register(r'orders', Others, basename='drone_shop_orders')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

@@ -59,14 +59,12 @@ class User(AbstractUser):
         verbose_name_plural = _("Users")
 
 
-class ShopOrganizationType(models.Model):
+class OrganizationType(models.Model):
 
     Choices = [
-    ('manufacturer','Manufacturer'),
-    ('seller','Seller'),
-    ('distributor', 'Distributor'),
-    ('assembler', 'Assembler')
-    ]
+        ('Product Provder',(('manufacturer','Manufacturer'),('seller','Seller'),('distributor', 'Distributor'),('assembler', 'Assembler'))),
+        ('service_provider','Service Provider')
+        ]
 
     type= models.CharField(_("Type"),max_length=30, choices=Choices, unique=True, primary_key=True, editable=True)
     created_at = models.DateTimeField(auto_now=True,editable=False)
@@ -83,7 +81,7 @@ class ShopOrganizationType(models.Model):
 class UpdateRequest(models.Model):#Rename it to something better
 
     user = models.OneToOneField(User, verbose_name=_("User"), on_delete=models.CASCADE, related_name='update_request')
-    org = models.ForeignKey(ShopOrganizationType, verbose_name=_("Update Request"), on_delete=models.CASCADE, related_name='uodate_to')
+    org = models.ForeignKey(OrganizationType, verbose_name=_("Update Request"), on_delete=models.CASCADE, related_name='uodate_to')
 
     desc = models.TextField(_("Description"))
     organization_name = models.CharField(_("Organization Name"), max_length=200, blank=True, null=True)

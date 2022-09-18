@@ -14,8 +14,8 @@ class Portfolio(models.Model):
 
     owner = models.OneToOneField(UserProfile, verbose_name=_("Portfolio Of"), on_delete=models.CASCADE, related_name="portfolio", primary_key=True, editable=True)
 
-    title = models.CharField(_("Title"), max_length=50)
-    bio = models.TextField(_("Biography"), max_length=300)
+    title = models.CharField(_("Title"), max_length=50, blank=False, null=True)
+    bio = models.TextField(_("Biography"), max_length=300, blank=False, null=True)
     links = models.URLField(_("External Links"), max_length=50, blank=False, null=True)
 
     def __str__(self):
@@ -30,7 +30,7 @@ class PortfolioPost(models.Model):
 
     portfolio = models.ForeignKey(Portfolio, verbose_name=_("Portfolio"), on_delete=models.CASCADE, related_name="posts")
 
-    caption = models.TextField(_("Caption"), max_length=500)
+    caption = models.TextField(_("Caption"), max_length=500, blank=False, null=True)
     created_at = models.DateTimeField(auto_now=True,editable=False)
     updated_at = models.DateTimeField(auto_now=True)
     

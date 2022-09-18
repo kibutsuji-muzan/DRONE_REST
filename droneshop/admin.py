@@ -1,12 +1,11 @@
 from django.contrib import admin
 
-from droneshop.models.category import (Category, CategoryByUser)
+from droneshop.models.category import Category
 from droneshop.models.product import (Product, ProductDetailValue, ProductImage, ProductVerificationRequest)
 from droneshop.models.orders import (orderedItem, customer)
 
 # Register your models here.
 admin.site.register(Category)
-admin.site.register(CategoryByUser)
 admin.site.register(ProductVerificationRequest)
 
 class ProductImageInline(admin.StackedInline):

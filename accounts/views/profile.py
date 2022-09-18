@@ -9,7 +9,7 @@ from django.db.models import Q
 
 from accounts.models.profileModel import UserProfile
 from accounts.models.userModel import UpdateRequest
-from accounts.serializers.profile_serializer import ProfileSerializer, RequestUpdateSerializer, ShopOrganizationType
+from accounts.serializers.profile_serializer import ProfileSerializer, RequestUpdateSerializer, OrganizationTypeSerializer
 from accounts.permissions import *
 from accounts.permissions import IsSameUser
 
@@ -27,7 +27,7 @@ class Profile(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.Gener
         if 'update-request' in self.request.path:
             return RequestUpdateSerializer
         if 'get-org-types' in self.request.path:
-            return ShopOrganizationType
+            return OrganizationTypeSerializer
         return ProfileSerializer
 
 

@@ -10,6 +10,10 @@ class customer(models.Model):
 
     user = models.ForeignKey(UserProfile, verbose_name=_("User"), on_delete=models.CASCADE, related_name="product_customer")
 
+    address = models.CharField(_("Address"), max_length=50)
+
+    is_active = models.BooleanField(default=True)
+
     class META:
         verbose_name = _("Customer")
         verbose_name_plural = _("Customers")
@@ -19,10 +23,15 @@ class customer(models.Model):
 
 class orderedItem(models.Model):
 
+    status = [('pending','Pending'),('shipping','Shipping'),('dilivered','Dilivered')]
+
     uuid = models.UUIDField(_("Order Id"), default=uuid.uuid4, editable=False,primary_key=True)
 
     product = models.ForeignKey(Product, verbose_name=_("Product"), on_delete=models.CASCADE)
     customerId = models.ForeignKey(customer, verbose_name=_("Customer"), on_delete=models.CASCADE, null=True)
+
+    status = models.CharField(choices=status, max_length=_('Status'), default='pending')
+    quantity = models.IntegerField(default=1)
 
     class META:
         verbose_name = _("Ordered Item")

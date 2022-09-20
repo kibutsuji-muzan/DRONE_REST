@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
-class PortfolioView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class BlogView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
 
     http_method_names = ['get', 'put', 'post']
     serializer_class = Blogserializer
@@ -38,16 +38,6 @@ class PortfolioView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.G
             'view': self
         }
 
-    # @action(methods=['post'], detail=True, permission_classes=[IsAuthenticated, IsWorker], url_name='create-blog', url_path='create-blog')
-    # def create_blog(self, request):
-
-    #     data = request.data
-    #     serializer = self.get_serializer(data=data)
-
-    #     if serializer.is_valid(raise_exception=True):
-    #         print(data)
-    #         serializer.create(serializer.data)
-    #         return Response('portfolio created')
 
     @action(methods=['post'], detail=False, url_name='update-request', url_path='update-request', permission_classes=['IsAuthenticated'])
     def update_request(self, request):
@@ -57,6 +47,7 @@ class PortfolioView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.G
             return Response('Request Already Exist')
         RequestBlogger.objects.create(user=request.user)
         return Response('Request Has Been Sent For Approvel')
+
 
     @action(methods=['put'], detail=True, url_name='update-blog', url_path='update-blog', permission_classes=[IsAuthenticated, IsBlogger])
     def update(self, request, pk):

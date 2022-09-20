@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import mixins
@@ -9,9 +9,20 @@ from droneservice.models.category import Category
 from droneservice.models.service import Service
 from droneservice.models.order import orderedService, customer
 
-from accounts.permissions import IsWorker, IsSameUser
+from accounts.permissions import IsWorker
 
-class Index(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
+def validate_data(data):
+    x = ('service','address')
+    req = dict.fromkeys(x)
+
+    try:
+        req.update({'service':Service.objects.get(uuid=data.get('service')), 'address':data.get('address')})
+    except:
+        return None
+    return req
+
+
+class ServiceIndex(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
 
     http_method_names = ['post','get','delete']
     queryset = Service.objects.filter(is_active=True)
@@ -26,18 +37,20 @@ class Index(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModel
 
 
     def get_serializer(self, *args, **kwargs):
-
+        try:
+            (kwargs['context']).update(self.get_serializer_context()) 
+        except:
+            kwargs['context'] = self.get_serializer_context()
+    
         serializer_class = self.get_serializer_class()
-        kwargs['context'] = self.get_serializer_context(kwargs.get('context'))
         return serializer_class(*args, **kwargs)
 
 
-    def get_serializer_context(self, context):
+    def get_serializer_context(self):
         """
         Extra context provided to the serializer class.
         """
         return {
-            'context': context,
             'request': self.request,
             'format': self.format_kwarg,
             'view': self
@@ -72,38 +85,37 @@ class Index(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModel
         return Response('Service Not Found')
 
 
-    @action(methods=['post'], detail=True, permission_classes=[IsAuthenticated,IsWorker], url_name='create-service',  url_path='create-service')
-    def create_Service(self, request, pk):
-        if IsSameUser(user=request.user, pk=pk):
-            images = request.FILES.getlist('service_image')
-            print(images)
-            if ((len(images) < 9) and (len(images) > 2)):
+    @action(methods=['post'], detail=False, permission_classes=[IsAuthenticated,IsWorker], url_name='create-service',  url_path='create-service')
+    def create_Service(self, request):
+        images = request.FILES.getlist('service_image')
+        print(images)
+        if ((len(images) < 9) and (len(images) > 2)):
+            try:
+                category = Category.objects.get(name=request.data.get('category'))
                 try:
-                    category = Category.objects.get(name=request.data.get('category'))
+                    request.data.pop('service_image')
                 except:
-                    return Response('Category Is Required')
+                    return Response('images required')
+            except:
+                return Response('Category Is Required')
 
-                data=request.data.copy()
+            data=request.data.copy()
+            for a in ['name','title','desc','price','category']:
+                try:
+                    data.pop(a)
+                except:
+                    pass
 
-                for a in ['owner','name','title','desc','price','category']:
-                    try:
-                        data.pop(a)
-                    except:
-                        pass
-
-                request.data.pop('Service_image')
-                request.data.pop('category')
-
-                request.data['category'] = str(category.uuid)
-                print(request.data)
-                serializer = self.get_serializer(data=request.data, context={'service_images':images,'details': data})
-
-                if serializer.is_valid(raise_exception=True):
-                    print(serializer.data)
-                    serializer.create(serializer.data)
-                    return Response('Your Data Has Been Send For Approvel')
-            return Response('More Then 8 And Less Then 3 Images Not Allowed')
-        return Response('Key And Token Not Matched')
+            request.data.pop('category')
+            request.data['category'] = str(category.uuid)
+            request.data['owner'] = request.user.user_profile
+            print(request.data)
+            serializer = self.get_serializer(data=request.data, context={'service_images':images,'details': data})
+            if serializer.is_valid(raise_exception=True):
+                print(serializer.data)
+                serializer.create(serializer.data)
+                return Response({'response':'Your Data Has Been Send For Approvel','data':serializer.data})
+        return Response({'response':'More Then 8 And Less Then 3 Images Not Allowed'})
 
 
     @action(methods=['delete'], detail=True, permission_classes=[IsAuthenticated,IsWorker], url_name='delete-service',  url_path='delete-service')
@@ -117,7 +129,10 @@ class Index(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModel
             Service.save()
             return Response('Your Deletion Request Has Been Sent')
 
-class Others(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin):
+
+
+
+class ServiceOthers(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
 
     serializer_class = OrderSerializer
     http_method_names = ['get','post','delete']
@@ -126,21 +141,38 @@ class Others(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveMode
     def get_queryset(self):
         user = self.request.user.user_profile
         return orderedService.objects.filter(customerId__user=user)
-    
-    @action(methods=['post'], detail=False, url_name='order-item', url_path='order-item')
-    def order_item(self, request):
-        data = request.data.getlist('uuid')
-        items=[]
+
+
+    def get_serializer(self, *args, **kwargs):
         try:
-            for id in data:
-                items.append(Service.objects.get(uuid=id))
-            user = request.user.user_profile
+            (kwargs['context']).update(self.get_serializer_context()) 
         except:
-            return Response('Ordered Item Not Valid')
+            kwargs['context'] = self.get_serializer_context()
+    
+        serializer_class = self.serializer_class
+        return serializer_class(*args, **kwargs)
 
-        cust = customer.objects.create(user=user)
 
-        for item in items:
-            orderedService.objects.create(customerId=cust, service=item)
+    def get_serializer_context(self):
+        return {
+            'request': self.request,
+            'format': self.format_kwarg,
+            'view': self
+        }
 
-        return Response('Your Order Has Been Placed')
+    @action(methods=['post'], detail=False, url_name='order_item', url_path='order-item')
+    def order_item(self, request):
+        try:
+            serializer = OrderSerializer(data=request.data)
+        except:
+            return Response('provided data is not valid')
+
+        cust = customer.objects.create(user=request.user.user_profile)
+
+        if serializer.is_valid(raise_exception=True):
+            res = validate_data(data=request.data)
+            print(res)
+            if res is not None:
+                orderedService.objects.create(customerId=cust,**res)
+                return Response('Your Order Has Been Placed')
+            return Response('Your given data is not valid', status=status.HTTP_400_BAD_REQUEST)

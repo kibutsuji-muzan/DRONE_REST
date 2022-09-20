@@ -23,15 +23,21 @@ class customer(models.Model):
 
 class orderedService(models.Model):
 
-    uuid = models.UUIDField(_("PID"), max_length=20, unique=True, editable=False, primary_key=True, default=uuid.uuid4)
+    STATUS = [('pending','Pending'),('shipping','Shipping'),('dilivered','Dilivered')]
+
+    uuid = models.UUIDField(_("Order Id"), default=uuid.uuid4, editable=False,primary_key=True)
 
     service = models.ForeignKey(Service, verbose_name=_("Product"), on_delete=models.CASCADE)
     customerId = models.ForeignKey(customer, verbose_name=_("Customer"), on_delete=models.CASCADE, null=True)
 
+    status = models.CharField(choices=STATUS, max_length=9, default='pending')
+    address = models.CharField(_("Address"), max_length=50, blank=True, null=True)
+
     class META:
-        verbose_name = _("Ordered Service")
-        verbose_name_plural = _("Ordered Services")
+        verbose_name = _("Ordered Item")
+        verbose_name_plural = _("Ordered Items")
 
     def __str__(self):
-        return self.service.name
+        return self.servece.name
+
 

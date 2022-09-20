@@ -6,4 +6,5 @@ from droneshop.models.product import ProductVerificationRequest, Product
 
 @receiver(post_save,sender=Product)
 def create_request(sender, instance, created, **kwargs):
-    ProductVerificationRequest.objects.create(product_name=instance)
+    if created:
+        ProductVerificationRequest.objects.create(product_name=instance)

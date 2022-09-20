@@ -13,13 +13,13 @@ class PostImageSerializer(serializers.ModelSerializer):
 class PortfolioPostserializer(serializers.ModelSerializer):
 
     post_image = PostImageSerializer(many=True, required=False)
-    
+
     class Meta:
         model = PortfolioPost
         fields = ['caption', 'post_image']
 
     def validate(self, data):
-        images = self.context.get('context')
+        images = self.context.get('images')
         if images is not None:
             if len(images) > 6:
                 raise serializers.ValidationError('More Than 4 Images Not Allowed In Posts')
@@ -27,7 +27,7 @@ class PortfolioPostserializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         images = []
-        for image in self.context.get('context'):
+        for image in self.context.get('images'):
             images.append({'image': image})
         p_i_s = PostImageSerializer(data=images, many=True)
         if p_i_s.is_valid(raise_exception=True):
@@ -43,7 +43,7 @@ class WithPostsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Portfolio
-        fields = ['title', 'bio', 'links', 'posts']
+        fields = ['owner', 'title', 'bio', 'links', 'posts']
 
 
 class PortfolioSerializer(serializers.ModelSerializer):
@@ -54,7 +54,6 @@ class PortfolioSerializer(serializers.ModelSerializer):
 
     def create(self, data):
         try:
-            print(self.context)
             profile = self.context.get('request').user.user_profile
         except:
             raise serializers.ValidationError('Users Profile Not Exsist')
@@ -62,7 +61,6 @@ class PortfolioSerializer(serializers.ModelSerializer):
 
     def update(self, instance, data):
         try:
-            print(self.context)
             profile = self.context.get('request').user.user_profile
         except:
             raise serializers.ValidationError('Users Profile Not Exsist')

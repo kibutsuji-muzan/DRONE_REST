@@ -7,7 +7,7 @@ from droneservice.models.service import Service
 import uuid
 
 class ContactUs(models.Model):
-
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, unique=True)
     name = models.CharField(_("Name"), max_length=30)
     email = models.EmailField(_("Email"), blank=True, null=True)
     phone = PhoneNumberField()
@@ -21,6 +21,7 @@ class ContactUs(models.Model):
         verbose_name = _("Contact Us")
 
 class Review(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, unique=True)
 
     user = models.ForeignKey(UserProfile, verbose_name=_("Review From"), on_delete=models.CASCADE)
 
@@ -35,6 +36,8 @@ class Review(models.Model):
         verbose_name = _("Review")
 
 class Reports(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, unique=True)
+    
     title = models.CharField(_("Title"), max_length=30)
     desc = models.CharField(_("Description"), max_length=300)
 
@@ -51,6 +54,7 @@ class Reports(models.Model):
         verbose_name = _("Report")
 
 class Complaints(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, unique=True)
 
     title = models.CharField(_("Title"), max_length=30)
     desc = models.CharField(_("Description"), max_length=300)

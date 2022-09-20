@@ -14,10 +14,11 @@ class Portfolio(models.Model):
 
     owner = models.OneToOneField(UserProfile, verbose_name=_("Portfolio Of"), on_delete=models.CASCADE, related_name="portfolio", primary_key=True, editable=True)
 
-    title = models.CharField(_("Title"), max_length=50, blank=False, null=True)
-    bio = models.TextField(_("Biography"), max_length=300, blank=False, null=True)
-    links = models.URLField(_("External Links"), max_length=50, blank=False, null=True)
+    title = models.CharField(_("Title"), max_length=50, blank=False, null=False)
+    bio = models.TextField(_("Biography"), max_length=300, blank=False, null=False)
+    links = models.URLField(_("External Links"), max_length=50, blank=False, null=False)
 
+    is_active = models.BooleanField(default=True)
     def __str__(self):
         return self.owner.email
 
@@ -27,10 +28,11 @@ class Portfolio(models.Model):
 
 
 class PortfolioPost(models.Model):
+    uuid = models.UUIDField(_("UUID"), primary_key = True, default=uuid.uuid4, editable=False, unique=True)
 
     portfolio = models.ForeignKey(Portfolio, verbose_name=_("Portfolio"), on_delete=models.CASCADE, related_name="posts")
 
-    caption = models.TextField(_("Caption"), max_length=500, blank=False, null=True)
+    caption = models.TextField(_("Caption"), max_length=500, blank=False, null=False)
     created_at = models.DateTimeField(auto_now=True,editable=False)
     updated_at = models.DateTimeField(auto_now=True)
     

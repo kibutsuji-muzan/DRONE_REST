@@ -6,6 +6,7 @@ from droneshop.models.orders import (orderedItem, customer)
 
 # Register your models here.
 admin.site.register(Category)
+admin.site.register(orderedItem)
 admin.site.register(ProductVerificationRequest)
 
 class ProductImageInline(admin.StackedInline):

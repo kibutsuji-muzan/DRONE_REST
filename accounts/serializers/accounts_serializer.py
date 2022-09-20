@@ -125,9 +125,10 @@ class PasswordResetSerializer(serializers.ModelSerializer):
         if data.get('password1') == data.get('password2'):
             try:
                 if validate_password(data.get('password1')) is None:
-                    user = self.get_serializer_context.get('user')
+                    user = self.context.get('user')
                     user.set_password(data.get('password1'))
                     user.save()
+                    user.reset_token.delete()
                     user.refresh_from_db
                     return data
             except ValidationError as e:

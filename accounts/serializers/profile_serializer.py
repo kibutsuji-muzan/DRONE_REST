@@ -76,14 +76,10 @@ class RequestUpdateSerializer(serializers.ModelSerializer):
         fields = ['desc', 'organization_name', 'phone', 'org']
 
     def create(self, data):
-        try:
-            updateto = OrganizationType.objects.get(type = data.get('organization_type'))
-        except:
-            raise serializers.ValidationError('Wrong User Type')
-
-        if updateto:
-            user = self.context.get('request').user
-            print(user)
-            self.Meta.model.objects.create(**data)
-            return data
-        return serializers.ValidationError('Wrong User Type')
+        user = self.context.get('request').user
+        data.pop('org')
+        data['user']=user
+        data['org']=self.context.get('org')
+        print(data)
+        self.Meta.model.objects.create(**data)
+        return data

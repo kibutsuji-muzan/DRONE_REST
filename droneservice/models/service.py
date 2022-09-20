@@ -64,14 +64,15 @@ class ServiceImage(models.Model):
 
 
 class ServiceVerificationRequest(models.Model):
-    uuid = models.UUIDField(_("PID"), max_length=20, unique=True, editable=False, primary_key=True, default=uuid.uuid4)
+    uuid = models.UUIDField(_("UUID"), primary_key=True, default=uuid.uuid4, editable=False)
 
     service_name = models.OneToOneField(Service, verbose_name=_("Service Name"), on_delete=models.CASCADE)
 
     is_verified = models.BooleanField(default=False)
 
     def __str__(self):
-        return str(self.serviceName)
+        return str(self.service_name)
+
     class Meta:
         verbose_name = _("Service Verification")
         verbose_name_plural = _("Services Verification")

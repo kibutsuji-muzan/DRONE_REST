@@ -24,7 +24,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = orderedService
-        fields = ['uuid', 'service']
+        fields = ['uuid', 'service','address']
         depth = 1
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -37,12 +37,11 @@ class ServiceSerializer(serializers.ModelSerializer):
         fields = ['uuid','owner','uuid','name','title','desc','price','category','service_detail','service_image']
 
 
-
     def create(self, data):
 
-        print(self.context.get('context').get('service_images'))
+        print(self.context.get('service_images'))
         images = []
-        for image in self.context.get('context').get('service_images'):
+        for image in self.context.get('service_images'):
             images.append({'image': image})
         p_i_s = ServiceImageSerializer(data=images, many=True)
 
@@ -57,12 +56,13 @@ class ServiceSerializer(serializers.ModelSerializer):
 
             service = self.Meta.model.objects.create(owner=self.context.get('request').user.user_profile, category=category, **data)
 
-            for key, value in self.context.get('context').get('details').items():
+            for key, value in self.context.get('details').items():
                 ServiceDetailValue.objects.create(service=service, detail_key = key, value_key = value)
 
-            for image in self.context.get('context').get('service_images'):
-                ServiceImage.objects.create(service=service, image=image)
+            for image in images:
+                ServiceImage.objects.create(service=service, image=image.get('image'))
         return data
+
 
 
 class CategorySerializer(serializers.ModelSerializer):

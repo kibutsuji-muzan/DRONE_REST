@@ -19,7 +19,7 @@ validator = FileTypeValidator(
 )
 
 def default_key():
-    return random_hex(40)
+    return random_hex(30)
 
 def expiryTime():
     hour = str(int(strftime('%H')) + 1)
@@ -29,7 +29,6 @@ def expiryTime():
 
 class User(AbstractUser):
 
-    GENDER = [('MALE', 'MALE'), ('FEMALE', 'FEMALE'), ('OTHER', 'OTHER')]
     username = None
     first_name = None
     last_name = None
@@ -62,8 +61,7 @@ class User(AbstractUser):
 class OrganizationType(models.Model):
 
     Choices = [
-        ('Product Provder',(('manufacturer','Manufacturer'),('seller','Seller'),('distributor', 'Distributor'),('assembler', 'Assembler'))),
-        ('service_provider','Service Provider')
+        ('Product Provder',(('manufacturer','Manufacturer'),('seller','Seller'),('distributor', 'Distributor'),('assembler', 'Assembler'))),('service_provider',(('pilot','Pilot'),('lender',('Lender'))))
         ]
 
     type= models.CharField(_("Type"),max_length=30, choices=Choices, unique=True, primary_key=True, editable=True)
@@ -84,8 +82,8 @@ class UpdateRequest(models.Model):#Rename it to something better
     org = models.ForeignKey(OrganizationType, verbose_name=_("Update Request"), on_delete=models.CASCADE, related_name='uodate_to')
 
     desc = models.TextField(_("Description"))
-    organization_name = models.CharField(_("Organization Name"), max_length=200, blank=True, null=True)
-    phone = PhoneNumberField(_("Phone Number"), blank=True, null=True)
+    organization_name = models.CharField(_("Organization Name"), max_length=200, blank=False, null=False, default='some')
+    phone = PhoneNumberField(_("Phone Number"), blank=False, null=False, default='some')
 
     is_verified = models.BooleanField(_("Is Verified"), default=False)
 
@@ -111,7 +109,7 @@ class PassResetToken(models.Model):
 
     user = models.OneToOneField(User, verbose_name=_("User"), on_delete=models.CASCADE, related_name='reset_token')
 
-    token = models.CharField(_("Token-Key"), max_length=41, default=default_key, validators=[hex_validator],)
+    token = models.CharField(_("Token-Key"), max_length=70, default=default_key, validators=[hex_validator],unique=True,)
 
     expiry = models.TimeField(_("Expiry"), auto_now=False, auto_now_add=False, default=expiryTime)
     created_at = models.TimeField(_("Ceated At"), auto_now_add=True)

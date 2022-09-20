@@ -6,4 +6,5 @@ from droneservice.models.service import ServiceVerificationRequest, Service
 
 @receiver(post_save,sender=Service)
 def create_request(sender, instance, created, **kwargs):
-    ServiceVerificationRequest.objects.create(service_name=instance)
+    if created:
+        ServiceVerificationRequest.objects.create(service_name=instance)

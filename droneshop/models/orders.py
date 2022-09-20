@@ -6,11 +6,9 @@ from accounts.models.profileModel import UserProfile
 
 class customer(models.Model):
 
-    uuid = models.UUIDField(_("Customer Id"), default = uuid.uuid4, blank=True, editable=False,primary_key=True)
+    uuid = models.UUIDField(_("Customer Id"), default = uuid.uuid4, editable=False,primary_key=True)
 
     user = models.ForeignKey(UserProfile, verbose_name=_("User"), on_delete=models.CASCADE, related_name="product_customer")
-
-    address = models.CharField(_("Address"), max_length=50)
 
     is_active = models.BooleanField(default=True)
 
@@ -23,14 +21,15 @@ class customer(models.Model):
 
 class orderedItem(models.Model):
 
-    status = [('pending','Pending'),('shipping','Shipping'),('dilivered','Dilivered')]
+    STATUS = [('pending','Pending'),('shipping','Shipping'),('dilivered','Dilivered')]
 
     uuid = models.UUIDField(_("Order Id"), default=uuid.uuid4, editable=False,primary_key=True)
 
     product = models.ForeignKey(Product, verbose_name=_("Product"), on_delete=models.CASCADE)
     customerId = models.ForeignKey(customer, verbose_name=_("Customer"), on_delete=models.CASCADE, null=True)
 
-    status = models.CharField(choices=status, max_length=_('Status'), default='pending')
+    status = models.CharField(choices=STATUS, max_length=9, default='pending')
+    address = models.CharField(_("Address"), max_length=50, blank=True, null=True)
     quantity = models.IntegerField(default=1)
 
     class META:

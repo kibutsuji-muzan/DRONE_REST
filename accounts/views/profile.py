@@ -8,7 +8,7 @@ from rest_framework import mixins
 from django.db.models import Q
 
 from accounts.models.profileModel import UserProfile
-from accounts.models.userModel import UpdateRequest
+from accounts.models.userModel import UpdateRequest, OrganizationType
 from accounts.serializers.profile_serializer import ProfileSerializer, RequestUpdateSerializer, OrganizationTypeSerializer
 from accounts.permissions import *
 from accounts.permissions import IsSameUser
@@ -32,8 +32,12 @@ class Profile(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.Gener
 
 
     def get_serializer(self, *args, **kwargs):
+        try:
+            (kwargs['context']).update(self.get_serializer_context()) 
+        except:
+            kwargs['context'] = self.get_serializer_context()
+
         serializer_class = self.get_serializer_class()
-        kwargs['context'] = self.get_serializer_context()
         return serializer_class(*args, **kwargs)
 
 
@@ -41,16 +45,13 @@ class Profile(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.Gener
         """
         Extra context provided to the serializer class.
         """
-        return {
+        context = {
             'request': self.request,
             'format': self.format_kwarg,
             'view': self
         }
 
-
-    def list(self, request):
-        return Response('Request Not Allowed')
-
+        return context
 
     def update(self, request, pk):
         if IsSameUser(user=request.user, pk=pk):
@@ -77,13 +78,24 @@ class Profile(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.Gener
 
     @action(methods=['post'], detail=False, url_name='update-request', url_path='update-request', permission_classes=[IsAuthenticated])
     def update_request(self, request):
+        
+        data={}
+        for key,value in request.data.items():
+            data[key]=value
+
         try:
             if UpdateRequest.objects.get(user=request.user):
                 return Response('Request Already Exist')
         except:
             pass
-
-        serializer = self.get_serializer(data=request.data)
+        try:
+            org=OrganizationType.objects.get(type=(str(data.get('org')).lower()))
+        except:
+            return Response('org Not Valid')
+        print(data)
+        data.pop('org')
+        data['org']=org
+        serializer = self.get_serializer(data=data, context={'org':org})
         if serializer.is_valid(raise_exception=True):
             serializer.create(data=serializer.data)
             #Add Send Email Or Phone Signal

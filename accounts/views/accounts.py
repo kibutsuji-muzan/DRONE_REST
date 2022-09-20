@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import viewsets
 from rest_framework import status
+from rest_framework.reverse import reverse
 
 from knox.models import AuthToken
 from post_office.models import EmailTemplate
@@ -56,14 +57,17 @@ class Base:
         return data
 
     def valid_email_phone(self, email_or_phone):
-        email = validate_email(address=email_or_phone, check_dns=True)
+        try:
+            email = validate_email(address=email_or_phone, check_dns=True)
+        except:
+            return None
         if email:
             return {'email': True, 'phone': False}
         try:
             if validate_phone(email_or_phone):
                 return {'phone': True, 'email': False}
         except:
-            raise Response('Not Valid', status=status.HTTP_400_BAD_REQUEST)
+            return None
 
     def createtoken(self, user):
         token = PassResetToken.objects.create(user=user)
@@ -73,15 +77,13 @@ class Base:
         try:
             user = User.objects.get(id=pk)
         except:
-            return Response('User with This Key Not Exixt', status=status.HTTP_400_BAD_REQUEST)
+            return None
         return user
 
     def get_otp(self, user):
         totp = user.verification_device
         otp = totp.generate_challenge()
         return otp
-
-
 
 
 class OTPManagement:
@@ -107,16 +109,20 @@ class OTPManagement:
                     'otp':otp
                 }
             }
+            response = {
+                'response':'Your Otp Has Been Sent To Your Phone',
+                'verify-otp-url':reverse('accounts-otp_verification', kwargs={'pk':user.id}, request=request)
+            }
             if user.email:
 
                 Send_Mail.send(sender=user, data=maildata)
                 print(otp)
-                return Response('Otp Has Been Sent To Your Email')
+                return Response(response)
 
             if user.phone:
                 Send_Sms.send(sender=user, data=smsdata)
                 print(otp)
-                return Response('Otp Has Been Sent To Your Phone Number')
+                return Response(response)
         return Response('Your Account Is Already Verified')
 
 
@@ -124,34 +130,43 @@ class OTPManagement:
     def verify_otp(self, request, pk):
         try:
             user = User.objects.get(id=pk)
+            if user.is_active:
+                return Response('User Already Verified')
         except:
             return Response('User With This Key Not Exist')
         totp = user.verification_device
         otp = request.data.get('otp')
-
-        if totp.verify_token(otp):
-            user.is_active = True
-            user.save()
-            user.refresh_from_db
-            return Response('Your Account Has Been Verified')
-        return Response('OTP is incorrect or not been sent', status.HTTP_400_BAD_REQUEST)
-
+        res={
+            'resend-otp':reverse('accounts-get_otp', kwargs={'pk':pk}, request=request)
+        }
+        res['response']='OTP is Required'
+        if otp is not None:
+            res['response']='OTP is incorrect'
+            if totp.verify_token(otp):
+                res={
+                    'signin-url':reverse('accounts-signin', request=request)
+                }
+                user.is_active = True
+                user.save()
+                user.refresh_from_db
+                return Response(res)
+            return Response(res, status.HTTP_400_BAD_REQUEST)
+        return Response(res)
 
 class PasswordManagement:
 
     @action(methods=['post'], detail=False, url_name='get_reset_link', url_path='get-reset-link')
     def get_reset_link(self, request):
-        
         email_or_phone = self.valid_email_phone(request.data.get('email_or_phone'))
+        if email_or_phone is not None:
+            try:
+                user = User.objects.get(Q(email=request.data.get('email_or_phone')) if email_or_phone.get('email') else Q(phone=request.data.get('email_or_phone')))
+            except:
+                return Response('User With This Token Does Not Exist', status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response('Email Or Phone Not Valid', status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            user = User.objects.get(Q(email=request.data.get('email_or_phone')) if email_or_phone.get('email') else Q(phone=request.data.get('email_or_phone')))
-        except:
-            return Response('User With This Token Does Not Exist', status=status.HTTP_400_BAD_REQUEST)
-        try:
-            token = PassResetToken.objects.get(user=user)
-        except:
-            token = False
+        token = PassResetToken.objects.filter(user=user)
 
         if token:
             token.delete()
@@ -159,8 +174,8 @@ class PasswordManagement:
         else:
             token = self.createtoken(user=user)
 
-        reset_link = f'http://127.0.0.1:8000/accounts/{token.token}/pass-reset/'
-
+        reset_link = reverse('accounts-pass_reset',kwargs={'pk':token.token}, request=request)
+        print(reset_link)
         maildata = {
             'mail':EmailTemplate.objects.get(name='get-reset-link'),
             'context':{
@@ -181,22 +196,18 @@ class PasswordManagement:
             Send_Sms.send(sender=user, data=smsdata)
             print(smsdata)
             return Response('Reset Link Has Been Sent To Your Phone Number')
-
-        print(token)
-        return Response('sheesh')
+        return Response('Something Went Wrong', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-    @action(methods=['put'], detail=True, url_name='pass_reset', url_path='pass-reset')
+    @action(methods=['post'], detail=True, url_name='pass_reset', url_path='pass-reset')
     def password_reset(self, request, pk):
         try:
             token = PassResetToken.objects.get(token=pk)
         except:
             return Response('Your Token Is Expired Or Incorrect', status=status.HTTP_400_BAD_REQUEST)
-        
         serializer = PasswordResetSerializer(data=request.data, context={'user': token.user})
-
         if serializer.is_valid(raise_exception=True):
-            return Response('Your Password Has Been Reset')
+            return Response({'response':'Your Password Has Been Reset', 'signin-url':reverse('accounts-signin',request=request)})
         return Response('Something Went Wrong', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -208,7 +219,6 @@ class AccountsManagement(Base, OTPManagement, PasswordManagement, viewsets.Gener
     http_method_names = ['post','get','delete']
     serializer_class = SignUpSerializer
 
-
     @action(methods=['post'], detail=False, url_name='signup', url_path='signup')
     def signup(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -217,8 +227,12 @@ class AccountsManagement(Base, OTPManagement, PasswordManagement, viewsets.Gener
             data = serializer.data
             user = serializer.create(data=data)
             if user:
-                data = self.get_post_response_data(user=user, request=None)
-                return Response(serializer.data)
+                data = {
+                    'User': serializer.data.get('email_or_phone'),
+                    'response': 'Registration Succesfull',
+                    'get-otp-url': reverse('accounts-get_otp', kwargs={'pk':user.id}, request=request)
+                }
+                return Response(data)
         return Response({'status': 400})
 
 
@@ -246,7 +260,6 @@ class AccountsManagement(Base, OTPManagement, PasswordManagement, viewsets.Gener
                         {"error": "Maximum amount of tokens allowed per user exceeded."},
                         status=status.HTTP_403_FORBIDDEN
                     )
-
             token_ttl = self.get_token_ttl()
             instance, token = AuthToken.objects.create(user, token_ttl)
             print(instance, token)

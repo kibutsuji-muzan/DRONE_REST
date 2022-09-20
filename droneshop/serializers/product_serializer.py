@@ -1,10 +1,11 @@
 from rest_framework import serializers
 
 from droneshop.models.product import Product, ProductDetailValue, ProductImage, ProductVerificationRequest
-from droneshop.models.orders import orderedItem
+from droneshop.models.orders import orderedItem, customer
 from droneshop.models.category import Category
 
 from droneshop.models.category import Category
+
 
 class ProductImageSerializer(serializers.ModelSerializer):
 
@@ -23,8 +24,9 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = orderedItem
-        fields = ['uuid', 'product']
+        fields = ['uuid', 'product','quantity','address']
         depth = 1
+
 
 class ProductSerializer(serializers.ModelSerializer):
 
@@ -33,15 +35,15 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['uuid','owner','uuid','name','title','desc','price','category','product_detail','product_image']
+        fields = ['uuid','owner','name','title','desc','price','category','product_detail','product_image']
 
 
 
     def create(self, data):
 
-        print(self.context.get('context').get('product_images'))
+        print(self.context.get('product_images'))
         images = []
-        for image in self.context.get('context').get('product_images'):
+        for image in self.context.get('product_images'):
             images.append({'image': image})
         p_i_s = ProductImageSerializer(data=images, many=True)
 
@@ -56,11 +58,11 @@ class ProductSerializer(serializers.ModelSerializer):
 
             product = self.Meta.model.objects.create(owner=self.context.get('request').user.user_profile, category=category, **data)
 
-            for key, value in self.context.get('context').get('details').items():
+            for key, value in self.context.get('details').items():
                 ProductDetailValue.objects.create(product=product, detail_key = key, value_key = value)
 
-            for image in self.context.get('context').get('product_images'):
-                ProductImage.objects.create(product=product, image=image)
+            for image in images:
+                ProductImage.objects.create(product=product, image=image.get('image'))
         return data
 
 

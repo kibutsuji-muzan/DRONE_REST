@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     'droneshop.apps.DroneshopConfig',
     'droneservice.apps.DroneserviceConfig',
     'extras.apps.ExtrasConfig',
-    # 'droneblog.apps.DroneblogConfig',
+    'droneblog.apps.DroneblogConfig',
 ]
 
 
